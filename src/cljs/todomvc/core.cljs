@@ -11,6 +11,8 @@
 
 (def atodos (r/atom nil))
 
+(def ctodos (r/atom nil))
+
 ;;Add to vector
 (defn add-to-vector [item]
   (swap! todos conj item))
@@ -42,28 +44,35 @@
        [:td (get-in @todos1 [i :task])]])]])
 
 ;;Display all todos
-(defn all-todos []
-  (display todos))
+(defn all-todos [todos]
+  (display todos1))
 
 ;;Display acitve todos
-(defn active-todos []
+(defn active-todos [todos]
   (do
-    (reset! atodos (vec (filter (fn [x] (= (:active x) true)) @todos)))
+    (reset! atodos (vec (filter (fn [x] (= (:active x) true)) @todos1)))
     (display atodos)))
 
-(js/console.log @todos)
 
-(js/console.log (clj->js (retrieve-from-vector 2)))
+;;Display complete todos
+(defn complete-todos [todos1]
+  (do
+    (reset! ctodos (vec (filter (fn [x] (= (:active x) false)) @todos1)))
+    (display ctodos)))
+
+
+
+
+;;(js/console.log @todos)
+
+;;(js/console.log (clj->js (retrieve-from-vector 2)))
 
 
 (defn home []
   [:div
    [:div
-    [:h1 "Todo List "]
-    [active-todos]]
-   ]) 
-
-
+    [:h1 "Todo List "]]
+    [:p (complete-todos todos)]]) 
 
 
 (defn ^:export main []
