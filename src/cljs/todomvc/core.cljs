@@ -16,9 +16,12 @@
 
 (def rtodos (r/atom nil))
 
+
+(defn inc-cnt [id]
+  (swap! id inc))
+
 (defn add-todo [text]
-  (let [id (swap! cnt inc)]
-    (sorted-map :id id :task text :active true)))
+  (hash-map :id (inc-cnt cnt) :task text :active true))
 
 ;;Add to vector
 (defn add-to-vector [item]
@@ -27,22 +30,33 @@
 (def adding (do
               (add-to-vector (add-todo "clojure"))
               (add-to-vector (add-todo "html"))
-              (add-to-vector {:id cnt :task "javascript" :active false})))
+              (add-to-vector (add-todo "javascript"))))
+
+;; Remove from vector
+(defn remove-from-vector [todos1 index]
+  (vec (concat (subvec @todos1 0 index) (subvec @todos1 (+ index 1)))))
+
+
 
 (defn display [todos1]
   [:div
    [:table
     (for [i (range 0 (count @todos1))]
-      ^{:key (get-in @todos1 [i :id])}
-      [:tr
-       [:td
-        [:button {:on-click #(reset! rtodos (remove-from-vector rtodos i))} "X"]]
-       [:td (get-in @todos1 [i :task])]])]])
-
-;; Remove from vector
-(defn remove-from-vector [todos1 index]
-  (vec (concat (subvec @todos1 0 index) (subvec @todos1 (+ index 1)))))
-    
+       ^{:key i}
+       [:tr
+        [:td (get-in @todos1 [i :task])]
+        (if (get-in @todos1 [i :active])
+         [:td "P"]
+         [:td "D"])       
+        (if (= (get-in @todos1 [i :active]) true)
+         [:td 
+          [:button {:on-click #(reset! todos (swap! todos1 assoc-in [i :active] false))} "Mark Done"]]
+                 
+         [:td
+          [:button {:on-click #(reset! todos (swap! todos1 assoc-in [i :active] true))} "Mark Pending"]])
+        [:td
+         [:button {:on-click #(reset! rtodos (remove-from-vector rtodos i))} "X"]]])]])
+ 
 
 ;;Retrieve from vector
 (defn retrieve-from-vector [id1]
@@ -69,6 +83,10 @@
 (defn complete-todos [todos1]
   (vec (filter (fn [x] (= (:active x) false)) @todos1)))
 
+;;clear complete todos
+(defn clear-complete-todos [todos1]
+  (vec (remove (fn [x] (= (:active x) false)) @todos1)))
+
 
 
 
@@ -94,11 +112,13 @@
         [:div
          [:p (display rtodos)]]
         [:span 
-         [:span "Items Left: " (count (active-todos todos)) "     "]
+         [:span "Items Left: " (count (active-todos todos))]
          [:button {:on-click #(reset! rtodos @todos)} "All"]
          [:button {:on-click #(reset! rtodos (active-todos todos))} "Active"]
-         [:button {:on-click #(reset! rtodos (complete-todos todos))} "Complete"]]
-        [:p (str @rtodos)]]))) 
+         [:button {:on-click #(reset! rtodos (complete-todos todos))} "Complete"]
+         [:button {:on-click #(reset! rtodos (reset! todos (clear-complete-todos todos)))} "Clear Complete"]]
+        [:p "temparary todos: " (str @rtodos)]
+        [:p "permenent todos: " (str @todos)]]))) 
 
 
 (defn ^:export main []
