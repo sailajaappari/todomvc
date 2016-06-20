@@ -14,6 +14,8 @@
 
 (def cnt (r/atom 0))
 
+(def rtodos (r/atom nil))
+
 (defn add-todo [text]
   (let [id (swap! cnt inc)]
     (sorted-map :id id :task text :active true)))
@@ -33,13 +35,14 @@
     (for [i (range 0 (count @todos1))]
       ^{:key (get-in @todos1 [i :id])}
       [:tr
+       [:td
+        [:button {:on-click #(reset! rtodos (remove-from-vector rtodos i))} "X"]]
        [:td (get-in @todos1 [i :task])]])]])
 
 ;; Remove from vector
-(defn remove-from-vector [index]
-  (do
-    (reset! todos (vec (concat (subvec @todos 0 index) (subvec @todos (+ index 1)))))
-    (display todos)))
+(defn remove-from-vector [todos1 index]
+  (vec (concat (subvec @todos1 0 index) (subvec @todos1 (+ index 1)))))
+    
 
 ;;Retrieve from vector
 (defn retrieve-from-vector [id1]
@@ -75,7 +78,7 @@
 
 
 (defn home []
-  (let [rtodos (r/atom [])
+  (let [
         task (r/atom nil)]
     (fn []
        [:div
@@ -91,6 +94,7 @@
         [:div
          [:p (display rtodos)]]
         [:span 
+         [:span "Items Left: " (count (active-todos todos)) "     "]
          [:button {:on-click #(reset! rtodos @todos)} "All"]
          [:button {:on-click #(reset! rtodos (active-todos todos))} "Active"]
          [:button {:on-click #(reset! rtodos (complete-todos todos))} "Complete"]]
