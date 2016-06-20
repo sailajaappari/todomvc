@@ -106,7 +106,7 @@
          [:span
           [:input {:type "text"
                      :on-change #(reset! task (-> % .-target .-value))}]
-          [:button {:on-click #(swap! todos conj (add-todo @task))} "Add"]]]
+          [:button {:on-click #(reset! rtodos (swap! todos conj (add-todo @task)))} "Add"]]]
 
             ;; [:p (all-todos todos)]
         [:div
